@@ -6,11 +6,13 @@ import {
   TextInput,
   ScrollView,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import baba from "../assets/shavi.jpeg";
 import { AntDesign, Feather, Ionicons, FontAwesome6 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
+import ContextStore from "../context/AddToCart";
+import CartBottomMenu from "./CartBottomMenu";
 
 const Message = ({ item }) => {
   return (
@@ -52,6 +54,12 @@ const Astrologer = () => {
     setText(value);
   };
 
+  const { setAddToCart, addToCart } = useContext(ContextStore);
+  console.log(
+    "-----------------------------------------------------",
+    addToCart
+  );
+
   const handleSendMessage = () => {
     let newData = {
       id: message.length + 1,
@@ -60,6 +68,32 @@ const Astrologer = () => {
     };
     setMessage([...message, newData]);
     setText("");
+  };
+
+  const handleAddToCart = (item) => {
+    const existingProduct = addToCart.find((p) => p.id === item.id);
+
+    if (existingProduct) {
+      const updatedCart = addToCart.map((p) =>
+        p.id === item.id ? { ...p, count: p.count + 1 } : p
+      );
+      setAddToCart(updatedCart);
+    } else {
+      let productDetails = {
+        id: item.id,
+        count: 1,
+        image: item.images[0],
+        price: item.price,
+        title: item.title,
+        description: item.description,
+        discountPercentage: item.discountPercentage,
+        rating: item.rating,
+        brand: item.brand,
+        category: item.category,
+        thumbnail: item.thumbnail,
+      };
+      setAddToCart([...addToCart, productDetails]);
+    }
   };
 
   const getApi = async () => {
@@ -90,20 +124,10 @@ const Astrologer = () => {
         >
           {userData &&
             userData.map((item, i) => (
-              // <Image
-              //   key={i}
-              //   source={baba}
-              //   resizeMode="cover"
-              //   style={{
-              //     flex: 1,
-              //     width: null,
-              //     height: null,
-              //   }}
-              // />
               <View
                 style={{
                   flex: 1,
-                  backgroundColor: "#412770",
+                  backgroundColor: "#F7D6D3",
                   // margin: 5,
                   padding: 20,
                   elevation: 5,
@@ -123,15 +147,19 @@ const Astrologer = () => {
 
                   <Text
                     style={{
-                      color: "#fff",
                       paddingTop: 10,
+                      color: "#000",
+                      fontWeight: "700",
+                      elevation: 3,
                     }}
                   >
                     {item.brand}
                   </Text>
                   <Text
                     style={{
-                      color: "#fff",
+                      color: "#000",
+                      fontWeight: "700",
+                      elevation: 3,
                       fontSize: 10,
                     }}
                   >
@@ -146,7 +174,14 @@ const Astrologer = () => {
                       padding: 10,
                     }}
                   >
-                    <Text style={{ color: "#fff", fontSize: 13 }}>
+                    <Text
+                      style={{
+                        color: "#000",
+                        fontWeight: "700",
+                        elevation: 3,
+                        fontSize: 13,
+                      }}
+                    >
                       Rs. {item.price}
                     </Text>
 
@@ -158,8 +193,15 @@ const Astrologer = () => {
                         alignItems: "center",
                       }}
                     >
-                      <AntDesign name="star" size={15} color="gold" />
-                      <Text style={{ color: "#fff", fontSize: 13 }}>
+                      <AntDesign name="star" size={15} color="#edb602" />
+                      <Text
+                        style={{
+                          color: "#000",
+                          fontWeight: "700",
+                          elevation: 3,
+                          fontSize: 13,
+                        }}
+                      >
                         {item.rating}
                       </Text>
                     </View>
@@ -167,14 +209,15 @@ const Astrologer = () => {
                   <TouchableOpacity
                     style={{
                       width: "100%",
-                      backgroundColor: "#0971e8",
+                      backgroundColor: "#FF5534",
                       justifyContent: "center",
                       alignItems: "center",
                       padding: 10,
                       borderRadius: 50,
                       elevation: 10,
                     }}
-                    onPress={() => navigation.navigate("Dashboard")}
+                    onPress={() => handleAddToCart(item)}
+                    // onPress={() => navigation.navigate("Dashboard")}
                   >
                     <Text
                       style={{ color: "#fff", fontSize: 17, fontWeight: "800" }}
@@ -185,8 +228,21 @@ const Astrologer = () => {
                 </View>
               </View>
             ))}
+
+          {/* <Image
+            // key={i}
+            source={baba}
+            resizeMode="cover"
+            style={{
+              flex: 1,
+              width: null,
+              height: null,
+            }}
+          /> */}
         </View>
       </ScrollView>
+
+      <CartBottomMenu />
 
       {/* <View
         style={{
